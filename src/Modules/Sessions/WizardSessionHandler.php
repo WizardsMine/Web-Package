@@ -5,7 +5,6 @@ namespace Wizard\Src\Modules\Sessions;
 use Wizard\Src\Modules\Config\Config;
 use Wizard\Src\Modules\Database\Database;
 use Wizard\Src\Modules\Database\Model;
-use Wizard\Src\Modules\Exception\ModelException;
 use Wizard\Src\Modules\Exception\SessionException;
 
 class WizardSessionHandler implements \SessionHandlerInterface
@@ -16,10 +15,22 @@ class WizardSessionHandler implements \SessionHandlerInterface
      */
     private $savePath;
 
+    /**
+     * @var $DBConnection
+     * Holds the database connection.
+     */
     private $DBConnection;
 
+    /**
+     * @var $model
+     * The database model.
+     */
     private $model;
 
+    /**
+     * @var string
+     * The driver that is used.
+     */
     private $driver;
 
     /**
@@ -174,7 +185,13 @@ class WizardSessionHandler implements \SessionHandlerInterface
         return true;
     }
 
-
+    /**
+     * @return string
+     * @throws SessionException
+     * @throws \Wizard\Src\Modules\Exception\DatabaseException
+     * 
+     * Returns the driver and checks if the driver is available.
+     */
     public function getDriver()
     {
         $config = Config::getFile('session');
@@ -244,9 +261,12 @@ class WizardSessionHandler implements \SessionHandlerInterface
         }
     }
 
+    /**
+     * Checks if the table for sessions exist.
+     * If not it will create one.
+     */
     public function checkTableExist()
     {
-        $this->DBConnection;
         $table = $this->model->table ?? 'sessions';
         $sql = "CREATE TABLE IF NOT EXISTS $table (
             `id` varchar(32) NOT NULL,
