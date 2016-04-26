@@ -1,0 +1,38 @@
+Include een andere file en/of een stukje van die file.
+example:
+    [{include@file@section}]
+
+Variables.
+example:
+    [{$variable}]
+
+Sections definen om zo delen van templates te gebruiken met include.
+example:
+    [{section@name}]
+    <p>Section</p>
+    [{end_section@name}]
+
+Een master file extenden/usen en in die master file kan je
+filable stukken maken die je kan fillen in de child file die de master file extend/used.
+example:
+
+master.template.php
+<!DOCTYPE html>
+<html>
+    <head>
+        [{fillable@naam}]
+    </head>
+    <body>
+        [{fillable@naam2}]
+    </body>
+</html>
+
+child.template.php
+[{use@master.template.php}]
+
+<b>deze html moet geignored worden omdat het niet tussen de fill tags staat en er wel een andere template geused word</b>
+
+[{fill@naam}]
+<link>
+<script></script>
+[{end_fill}]

@@ -1,0 +1,14 @@
+{
+  "name": "wizard/framework-package",
+  "description": "The core of the WizardsMine framework",
+  "require": {
+    "php": ">=7.0.0",
+    "phpmailer/phpmailer": "^5.2",
+    "symfony/filesystem": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Wizard\\": "src/Wizard/"
+    }
+  }
+}
