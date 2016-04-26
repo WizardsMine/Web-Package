@@ -1,5 +1,5 @@
 {
-  "name": "wizard/framework",
+  "name": "wizardsmine/package",
   "description": "The core of the WizardsMine framework",
   "require": {
     "php": ">=7.0.0",
