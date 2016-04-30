@@ -2,6 +2,7 @@
 
 namespace Wizard\Src\Templating;
 
+use Wizard\Src\Http\App\Controller;
 use Wizard\Src\Kernel\App;
 use Wizard\Src\Assets\AssetsManager;
 use Wizard\Src\Templating\Exception\TemplateEngineException;
@@ -123,6 +124,31 @@ class TemplateLoader
             $content = substr_replace($content, html_entity_decode($tag).chr(10), $pos, 0);
         }
         return $content;
+    }
+
+    /**
+     * @param array $parameters
+     * @return array
+     * @throws TemplateException
+     *
+     * Checks if the parameters array contains specific keys.
+     * Also adds a clean controller class.
+     */
+    public function filterParameters(array $parameters)
+    {
+        foreach ($parameters as $key => $value) {
+            if ($key === 'controller') {
+                throw new TemplateException('Cant have controller as parameter key');
+            }
+            if ($key === 'images') {
+                throw new TemplateException('Cant have images as parameter key');
+            }
+            if ($key === 'links') {
+                throw new TemplateException('Cant have links as parameter key');
+            }
+        }
+        $parameters['controller'] = new Controller($this->root);
+        return $parameters;
     }
 
     /**

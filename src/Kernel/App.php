@@ -45,6 +45,12 @@ class App
     static $Debug = array();
 
     /**
+     * @var static string
+     * Holds the base uri of the request.
+     */
+    static $BaseUri;
+
+    /**
      * @var string
      * The requested uri by the user
      */
@@ -68,6 +74,8 @@ class App
     {
         $this->uri = $uri;
         $this->method = $method;
+
+        self::$BaseUri = substr($_SERVER['REQUEST_URI'], 0, strlen($_SERVER['REQUEST_URI']) - strlen(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['PHP_SELF'], '/index.php'))));
 
         try {
             $this->DBConnect();
@@ -120,7 +128,9 @@ class App
 
         $loader = new TemplateLoader(App::$Root.'/Storage/Cache/template.php');
         $content = $loader->loadTemplate($path);
-        
+
+        $parameters = $loader->filterParameters($parameters);
+
         $asset_name = HttpKernel::$Route['assets'];
         $params = $loader->addAssets($content, $asset_name);
         $parameters['links'] = $params['links'];
@@ -128,7 +138,7 @@ class App
 
         $cache = self::$Root.'/Storage/Cache/template.php';
         App::$Response = self::loadResponseFile($cache, $parameters);
-        
+
         return true;
     }
 

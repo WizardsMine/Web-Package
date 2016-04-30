@@ -10,6 +10,8 @@ class AssetsManager
 {
     private $root;
 
+    private $baseUri;
+
     private $assets;
 
     private $file;
@@ -17,6 +19,7 @@ class AssetsManager
     public function __construct($assets_name = null)
     {
         $this->root = App::$Root;
+        $this->baseUri = App::$BaseUri;
         $this->assets = $assets_name;
     }
 
@@ -115,7 +118,6 @@ class AssetsManager
             throw new AssetException('Autoload value must be a array');
         }
         $assets = array('css' => array(), 'js' => array());
-        $base = substr($_SERVER['REQUEST_URI'], 0, strlen($_SERVER['REQUEST_URI']) - strlen(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['PHP_SELF'], '/index.php'))));
         foreach ($autoload as $path => $type) {
             if (!is_string($type)) {
                 throw new AssetException('Asset file type must be a string');
@@ -133,7 +135,7 @@ class AssetsManager
                         throw new AssetException('Asset css file not found');
                     }
 
-                    $realPath = $base.'/Resources/Assets/css/'.$path.'.css';
+                    $realPath = $this->baseUri.'/Resources/Assets/css/'.$path.'.css';
                     $assets['css'][] = htmlentities("<link rel='stylesheet' href='$realPath'>");
                     break;
 
@@ -145,7 +147,7 @@ class AssetsManager
                     if (!file_exists($this->root.'/Resources/Assets/js/'.$path.'.js')) {
                         throw new AssetException('Asset css file not found');
                     }
-                    $realPath = $base.'/Resources/Assets/js/'.$path.'.js';
+                    $realPath = $this->baseUri.'/Resources/Assets/js/'.$path.'.js';
                     $assets['js'][] = htmlentities("<script src='$realPath'></script>");
                     break;
 
@@ -169,7 +171,6 @@ class AssetsManager
             throw new AssetException('Autoload value must be a array');
         }
         $image_links = array();
-        $base = substr($_SERVER['REQUEST_URI'], 0, strlen($_SERVER['REQUEST_URI']) - strlen(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['PHP_SELF'], '/index.php'))));
         foreach ($images as $variable => $image) {
             if (!is_string($variable) || !is_string($image)) {
                 throw new AssetException('Both variable and image path must be a string');
@@ -181,7 +182,7 @@ class AssetsManager
             if (!file_exists($this->root.'/Resources/Assets/img/'.$image)) {
                 throw new AssetException('Asset image file not found');
             }
-            $image_links[$variable] = $base.'/Resources/Assets/img/'.$image;
+            $image_links[$variable] = $this->baseUri.'/Resources/Assets/img/'.$image;
         }
         return $image_links;
     }
