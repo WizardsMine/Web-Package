@@ -100,7 +100,7 @@ class AssetsManager
         }
 
         if (array_key_exists('links', $asset_info)) {
-            $assets['links'] = array_merge_recursive($assets['links'], $this->getImages($asset_info['links']));
+            $assets['links'] = array_merge_recursive($assets['links'], $this->getLinks($asset_info['links']));
         }
         return $assets;
     }
@@ -204,10 +204,14 @@ class AssetsManager
             if (!is_string($variable) || !is_string($link)) {
                 throw new AssetException('Both variable and link path must be a string');
             }
-            if (!substr($link, 0, 7) === 'http://' || !substr($link, 0, 8) === 'https://') {
-                throw new AssetException('An asset link must start with http:// or https://');
+            if (substr($link, 0, 7) === 'http://' || substr($link, 0, 8) === 'https://') {
+                $validated_links[$variable] = $link;
+                continue;
             }
-            $validated_links[$variable] = $link;
+            if (!file_exists($this->root.'/Resources/Assets/'.$link)) {
+                throw new AssetException('Assets file not found '.$link);
+            }
+            $validated_links[$variable] = $this->baseUri. '/Resources/Assets/'.$link;
         }
         return $validated_links;
     }
