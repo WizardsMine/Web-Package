@@ -3,8 +3,10 @@
 namespace Wizard\Src\Http\Controller;
 
 use Wizard\Src\Http\App\Controller;
+use Wizard\Src\Http\App\Request;
 use Wizard\Src\Http\BaseFunctions;
 use Wizard\Src\Http\Exception\ControllerException;
+use Wizard\Src\Http\HttpKernel;
 use Wizard\Src\Kernel\App;
 
 class BaseController
@@ -86,12 +88,20 @@ class BaseController
             throw new ControllerException("Controller method doesn't exist");
         }
 
-        $controller = call_user_func(array($controller_object, $location['function']));
+        $controller = call_user_func(array($controller_object, $location['function']), $this->prepareRequest());
 
         if ($controller === null) {
             throw new ControllerException('Controller method didnt return');
         }
         return $controller;
+    }
+
+    private function prepareRequest()
+    {
+        $request = new Request();
+        $request->route_parameters = HttpKernel::$Route['params'];
+
+        return $request;
     }
 
     /**

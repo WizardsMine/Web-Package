@@ -4,6 +4,7 @@ namespace Wizard\Src\Http\Routing;
 
 use Wizard\Src\Http\Exception\RouteException;
 use Wizard\Src\Kernel\App;
+use Wizard\Src\Util\Strings;
 
 class Routing
 {
@@ -176,14 +177,81 @@ class Routing
      * @param $method
      * @return bool
      *
-     * Check if the route matches with the requested uri and request method.
+     * Check if the route has parameters and after that it will check if the uri
+     * matches with the route and the request method.
      */
     private function checkRoute($route, $method)
     {
-        if (is_string($route) && is_string($method)) {
-            if ($this->uri == $route && $this->method == $method) {
-                return true;
+        if (is_string($route) && is_string($method) && $this->method == $method ) {
+
+            $param = $this->routeHasParam($route);
+            if ($param === false) {
+                if ($this->uri == $route) {
+                    return true;
+                }
+            } else {
+                $route = str_replace('/', '\/', $route);
+
+                $route = substr_replace($route, '(', 0, 0);
+
+                $positions = array();
+                $loop = 0;
+
+                for ($i = 0; $loop < count($param[0]); $i++) {
+                    if ($i > 0) {
+                        $positions[$i]['first'] = strpos($route, '{', $positions[$i - 1]['second']);
+                    } else {
+                        $positions[$i]['first'] = strpos($route, '{');
+                    }
+                    $positions[$i]['second'] = strpos($route, '}', $positions[$i]['first']);
+                    $loop++;
+                }
+
+                foreach ($positions as $id => $position) {
+                    $route = substr_replace($route, ')', $position['first'] + ($id * 2), 0);
+                    $route = substr_replace($route, '(', $position['second'] + 2 + ($id * 2), 0);
+                }
+
+                $route = substr_replace($route, ')', strlen($route), 0);
+
+                $route = preg_replace('/(\{)[\w]+(\})/', '[\w]+', $route);
+
+                $route = substr_replace($route, '~', 0, 0);
+                $route = substr_replace($route, '~', strlen($route), 0);
+
+                if (preg_match($route, $this->uri, $match, PREG_OFFSET_CAPTURE)) {
+
+                    $param_names = array();
+                    foreach ($param[0] as $value) {
+                        $param_names[] = str_replace('}', '', str_replace('{', '', $value));
+                    }
+
+                    $start_pos = 0;
+
+                    foreach ($match as $id => $match_part) {
+                        if ($id === 0 || count($match) === $id+1) {
+                            continue;
+                        }
+                        $length = $match[$id+1][1] - (strlen($match_part[0]) + $start_pos);
+
+                        $value = substr($this->uri, strlen($match_part[0]) + $start_pos, $length);
+
+                        $this->matching_route['params'][$param_names[$id-1]] = $value;
+
+                        $start_pos = $match[$id+1][1];
+                    }
+                    return true;
+                }
             }
+        }
+        return false;
+    }
+
+    public function routeHasParam($route)
+    {
+        $regex = preg_match_all('/(\{)[\w]+(\})/', $route, $matches);
+        if ($regex >= 1) {
+            return $matches;
         }
         return false;
     }
@@ -290,6 +358,7 @@ class Routing
         } else {
             throw new RouteException('Value of route must be an array or string');
         }
+        $this->matching_route['params'] = $this->matching_route['params'] ?? array();
         $this->matching_route['route'] = $route;
         $this->matching_route['method'] = $request_method;
         $this->matching_route['middleware'] = $route_params['middleware'] ?? $middleware ?? null;
