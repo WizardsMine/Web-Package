@@ -1,0 +1,6 @@
+dat je een event kan specifiën.
+
+- on_select
+- on_update
+- on_insert
+- on_delete

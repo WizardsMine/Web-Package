@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Src\Http\App;
+namespace Wizard\Src\App;
 
 class Request 
 {

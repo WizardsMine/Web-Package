@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Src\Http\App;
+namespace Wizard\Src\App;
 
 use Wizard\Src\Modules\AbstractModule;
 
