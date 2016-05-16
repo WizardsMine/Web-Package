@@ -2,8 +2,8 @@
 
 namespace Wizard\Src\Http\Controller;
 
-use Wizard\Src\Http\App\Controller;
-use Wizard\Src\Http\App\Request;
+use Wizard\Src\App\Controller;
+use Wizard\Src\App\Request;
 use Wizard\Src\Http\BaseFunctions;
 use Wizard\Src\Http\Exception\ControllerException;
 use Wizard\Src\Http\HttpKernel;

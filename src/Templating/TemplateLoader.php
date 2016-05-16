@@ -2,7 +2,7 @@
 
 namespace Wizard\Src\Templating;
 
-use Wizard\Src\Http\App\Controller;
+use Wizard\Src\App\Controller;
 use Wizard\Src\Kernel\App;
 use Wizard\Src\Assets\AssetsManager;
 use Wizard\Src\Templating\Exception\TemplateEngineException;
