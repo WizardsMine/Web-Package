@@ -36,13 +36,17 @@ trait BaseStatements
         $loop = 0;
         foreach ($columnParameter as $column) {
             if ($loop === 0) {
-                if (count(explode('.', $column)) > 1) {
+                if (preg_match('/(count\()[\w*]+(\))/', $column)) {
+                    $columns .= $column;
+                } elseif (count(explode('.', $column)) > 1) {
                     $columns .= $column;
                 } else {
                     $columns .= $table.'.'.$column;
                 }
             } else {
-                if (count(explode('.', $column)) > 1) {
+                if (preg_match('/(count\()[\w*]+(\))/', $column)) {
+                    $columns .= ','. $column;
+                } elseif (count(explode('.', $column)) > 1) {
                     $columns .= ','. $column;
                 } else {
                     $columns .= ','. $table.'.'.$column;
