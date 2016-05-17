@@ -22,7 +22,7 @@ abstract class AbstractModule
     public $model;
 
 
-    function __construct(){
+    function __construct() {
 
         $this->config = new Config();
 

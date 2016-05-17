@@ -13,6 +13,13 @@ class BaseController
 {
     use BaseFunctions;
 
+
+    /**
+     * @var $controllerObject
+     * Holds the class of the executed controller.
+     */
+    static $controllerObject;
+
     /**
      * @var string
      * Holds the project root.
@@ -93,6 +100,8 @@ class BaseController
         if ($controller === null) {
             throw new ControllerException('Controller method didnt return');
         }
+        self::$controllerObject = $controller_object;
+
         return $controller;
     }
 
