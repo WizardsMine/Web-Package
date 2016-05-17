@@ -10,6 +10,8 @@ class Request
 
     public $GET;
 
+    public $models;
+
     function __construct()
     {
         $this->POST = $_POST;

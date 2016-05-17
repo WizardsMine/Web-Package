@@ -4,7 +4,7 @@ namespace Wizard\Src\Http\Routing;
 
 use Wizard\Src\Http\Exception\RouteException;
 use Wizard\Src\Kernel\App;
-use Wizard\Src\Util\Strings;
+use Wizard\Src\Modules\Database\Model;
 
 class Routing
 {
@@ -363,6 +363,25 @@ class Routing
         $this->matching_route['method'] = $request_method;
         $this->matching_route['middleware'] = $route_params['middleware'] ?? $middleware ?? null;
         $this->matching_route['assets'] = $route_params['assets'] ?? $assets ?? null;
+        if (array_key_exists('models', $route_params)) {
+            if (!is_array($route_params['models'])) {
+                throw new RouteException('Value of models key in route must be an array');
+            }
+            foreach ($route_params['models'] as $key => $model) {
+                if (!is_string($key) || !is_string($model)) {
+                    throw new RouteException('Every key and value in the models array must be a string');
+                }
+                if (!class_exists($model)) {
+                    throw new RouteException($model. ' class not found');
+                }
+                $this->matching_route['models'][$key] = new $model();
+                if (!$this->matching_route['models'][$key] instanceof Model) {
+                    throw new RouteException($model. ' is not instance of Wizard\Src\Modules\Database\Model');
+                }
+            }
+        } else {
+            $this->matching_route['models'] = array();
+        }
     }
 }
 

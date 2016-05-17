@@ -110,6 +110,8 @@ class BaseController
         $request = new Request();
         $request->route_parameters = HttpKernel::$Route['params'];
 
+        $request->models = HttpKernel::$Route['models'];
+
         return $request;
     }
 

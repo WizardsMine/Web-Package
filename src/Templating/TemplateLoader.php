@@ -4,6 +4,7 @@ namespace Wizard\Src\Templating;
 
 use Wizard\Src\App\Controller;
 use Wizard\Src\Http\Controller\BaseController;
+use Wizard\Src\Http\HttpKernel;
 use Wizard\Src\Kernel\App;
 use Wizard\Src\Assets\AssetsManager;
 use Wizard\Src\Templating\Exception\TemplateEngineException;
@@ -147,12 +148,17 @@ class TemplateLoader
             if ($key === 'links') {
                 throw new TemplateException('Cant have links as parameter key');
             }
+            if ($key === 'models') {
+                throw new TemplateException('Cant have models as parameter key');
+            }
         }
         if (!empty(BaseController::$controllerObject)) {
             $parameters['controller'] = BaseController::$controllerObject;
         } else {
             $parameters['controller'] = new Controller($this->root);
         }
+        $parameters['models'] = HttpKernel::$Route['models'];
+
         return $parameters;
     }
 
