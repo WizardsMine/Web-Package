@@ -36,9 +36,17 @@ trait BaseStatements
         $loop = 0;
         foreach ($columnParameter as $column) {
             if ($loop === 0) {
-                $columns .= $table.'.'.$column;
+                if (count(explode('.', $column)) > 1) {
+                    $columns .= $column;
+                } else {
+                    $columns .= $table.'.'.$column;
+                }
             } else {
-                $columns .= ','. $table.'.'.$column;
+                if (count(explode('.', $column)) > 1) {
+                    $columns .= ','. $column;
+                } else {
+                    $columns .= ','. $table.'.'.$column;
+                }
             }
             $loop++;
         }
