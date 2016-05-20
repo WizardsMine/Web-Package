@@ -364,7 +364,7 @@ class Routing
         $this->matching_route['method'] = $request_method;
         $this->matching_route['middleware'] = $route_params['middleware'] ?? $middleware ?? null;
         $this->matching_route['assets'] = $route_params['assets'] ?? $assets ?? null;
-        
+
         if ($models !== null && is_array($route_params) && array_key_exists('models', $route_params)) {
             if (!is_array($models) || !is_array($route_params['models'])) {
                 throw new RouteException('Value of models key in route must be an array');
