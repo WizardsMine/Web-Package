@@ -2,12 +2,14 @@
 
 namespace Wizard\Modules\Config;
 
+use Wizard\Kernel\App;
+
 class Config
 {
 
     public static function getFile($path)
     {
-        $path = __DIR__.'/../../../../../../config/'.$path.'.php';
+        $path = App::$Root.'/Config/'.$path.'.php';
         //echo $path;
         if (!file_exists($path)) {
             return null;
