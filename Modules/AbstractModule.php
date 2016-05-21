@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Src\Modules;
+namespace Wizard\Modules;
 
 use Wizard\Modules\Config\Config;
 use Wizard\Modules\Database\Model;
