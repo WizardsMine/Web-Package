@@ -2,8 +2,8 @@
 
 namespace Wizard\Src\Http\Controller;
 
-use Wizard\Src\Http\App\Controller;
-use Wizard\Src\Http\App\Request;
+use Wizard\Src\App\Controller;
+use Wizard\Src\App\Request;
 use Wizard\Src\Http\BaseFunctions;
 use Wizard\Src\Http\Exception\ControllerException;
 use Wizard\Src\Http\HttpKernel;
@@ -12,6 +12,13 @@ use Wizard\Src\Kernel\App;
 class BaseController
 {
     use BaseFunctions;
+
+
+    /**
+     * @var $controllerObject
+     * Holds the class of the executed controller.
+     */
+    static $controllerObject;
 
     /**
      * @var string
@@ -93,6 +100,8 @@ class BaseController
         if ($controller === null) {
             throw new ControllerException('Controller method didnt return');
         }
+        self::$controllerObject = $controller_object;
+
         return $controller;
     }
 
@@ -100,6 +109,8 @@ class BaseController
     {
         $request = new Request();
         $request->route_parameters = HttpKernel::$Route['params'];
+
+        $request->models = HttpKernel::$Route['models'];
 
         return $request;
     }

@@ -36,9 +36,21 @@ trait BaseStatements
         $loop = 0;
         foreach ($columnParameter as $column) {
             if ($loop === 0) {
-                $columns .= $table.'.'.$column;
+                if (preg_match('/(count\()[\w*]+(\))/', $column)) {
+                    $columns .= $column;
+                } elseif (count(explode('.', $column)) > 1) {
+                    $columns .= $column;
+                } else {
+                    $columns .= $table.'.'.$column;
+                }
             } else {
-                $columns .= ','. $table.'.'.$column;
+                if (preg_match('/(count\()[\w*]+(\))/', $column)) {
+                    $columns .= ','. $column;
+                } elseif (count(explode('.', $column)) > 1) {
+                    $columns .= ','. $column;
+                } else {
+                    $columns .= ','. $table.'.'.$column;
+                }
             }
             $loop++;
         }
@@ -46,7 +58,7 @@ trait BaseStatements
         $Class = new class {
             use Joins, WhereStatement, OrderBy, FetchAndExecute;
         };
-        $Class->connection = debug_backtrace()[0]['object']->DB_Connection ?? Database::$DBConnection;
+        $Class->connection = debug_backtrace()[0]['object']->connection ?? Database::$DBConnection;
         if ($Class->connection === null) {
             throw new ModelException('No database connection found');
         }
@@ -97,7 +109,7 @@ trait BaseStatements
         $Class = new class {
             use Joins, WhereStatement, FetchAndExecute, SubUpdateStatements;
         };
-        $Class->connection = debug_backtrace()[0]['object']->DB_Connection ?? Database::$DBConnection;
+        $Class->connection = debug_backtrace()[0]['object']->connection ?? Database::$DBConnection;
         if ($Class->connection === null) {
             throw new ModelException('No database connection found');
         }
@@ -163,7 +175,7 @@ trait BaseStatements
         $Class = new class {
             use FetchAndExecute;
         };
-        $Class->connection = debug_backtrace()[0]['object']->DB_Connection ?? Database::$DBConnection;
+        $Class->connection = debug_backtrace()[0]['object']->connection ?? Database::$DBConnection;
         if ($Class->connection === null) {
             throw new ModelException('No database connection found');
         }
@@ -184,7 +196,7 @@ trait BaseStatements
         $Class = new class {
             use WhereStatement, FetchAndExecute;
         };
-        $Class->connection = debug_backtrace()[0]['object']->DB_Connection ?? Database::$DBConnection;
+        $Class->connection = debug_backtrace()[0]['object']->connection ?? Database::$DBConnection;
         if ($Class->connection === null) {
             throw new ModelException('No database connection found');
         }
@@ -198,7 +210,7 @@ trait BaseStatements
         $Class = new class {
             use FetchAndExecute;
         };
-        $Class->connection = debug_backtrace()[0]['object']->DB_Connection ?? Database::$DBConnection;
+        $Class->connection = debug_backtrace()[0]['object']->connection ?? Database::$DBConnection;
         if ($Class->connection === null) {
             throw new ModelException('No database connection found');
         }

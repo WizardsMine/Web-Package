@@ -1,10 +1,22 @@
 <?php
 
-namespace Wizard\Src\Http\App;
+namespace Wizard\Src\App;
 
 class Request 
 {
     public $route_parameters = array();
+
+    public $POST;
+
+    public $GET;
+
+    public $models;
+
+    function __construct()
+    {
+        $this->POST = $_POST;
+        $this->GET = $_GET;
+    }
 
     /**
      * @param string $value

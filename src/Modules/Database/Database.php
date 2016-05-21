@@ -9,6 +9,8 @@ class Database
 {
     static $DBConnection;
 
+    public $connection = null;
+
     public function connect(string $database = '', string $host = '', string $user = '', string $password = '', string $driver = 'mysql')
     {
         if (!empty($driver) && !empty($database) && !empty($host) && !empty($user) && !empty($password)) {

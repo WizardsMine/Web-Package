@@ -151,7 +151,8 @@ class HttpKernel
                 }
                 $path = App::$Root.'/Resources/Views/'.$page.'.php';
             } else {
-                $path = App::$Root.'/Resources/ErrorPages'. $executed['error'] ?? 'AccessDenied'. '.php';
+                $page = $executed['error'] ?? 'AccessDenied';
+                $path = App::$Root.'/Resources/ErrorPages/'. $page. '.php';
             }
             return [false, 'path' => $path, 'parameters' => $this->BaseController->getParams($executed) ?? array()];
         } catch (MiddlewareException $e) {

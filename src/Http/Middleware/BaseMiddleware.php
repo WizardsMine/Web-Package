@@ -3,15 +3,11 @@
 namespace Wizard\Src\Http\Middleware;
 
 use Wizard\Src\Exception\WizardRuntimeException;
-use Wizard\Src\Http\App\Middleware;
+use Wizard\Src\App\Middleware;
 use Wizard\Src\Http\BaseFunctions;
-use Wizard\Src\Http\Exception\ControllerException;
 use Wizard\Src\Http\Exception\MiddlewareException;
 use Wizard\Src\Http\Interfaces\MiddlewareInterface;
 use Wizard\Src\Kernel\App;
-use Wizard\Src\Modules\Filesystem\Filesystem;
-use Wizard\Src\Templating\Exception\TemplateException;
-use Wizard\Src\Templating\TemplateLoader;
 
 class BaseMiddleware
 {

@@ -4,7 +4,7 @@ namespace Wizard\Src\Http\Routing;
 
 use Wizard\Src\Http\Exception\RouteException;
 use Wizard\Src\Kernel\App;
-use Wizard\Src\Util\Strings;
+use Wizard\Src\Modules\Database\Model;
 
 class Routing
 {
@@ -314,7 +314,7 @@ class Routing
             if (!$this->checkRoute($route, $request_method)) {
                 continue;
             }
-            $this->setMatchingRoute($route, $route_params, $request_method, $group['middleware'] ?? null, $group['assets'] ?? null);
+            $this->setMatchingRoute($route, $route_params, $request_method, $group['middleware'] ?? null, $group['assets'] ?? null, $group['models'] ?? null);
             return true;
         }
         return false;
@@ -326,12 +326,13 @@ class Routing
      * @param string $request_method
      * @param string|null $middleware
      * @param null $assets
+     * @param null $models
      * @throws RouteException
      *
      * Checks if the route and the route parameters are valid and adding them to the matching_route
      * property to be used further in the http process.
      */
-    private function setMatchingRoute($route, $route_params, string $request_method, string $middleware = null, $assets = null)
+    private function setMatchingRoute($route, $route_params, string $request_method, string $middleware = null, $assets = null, $models = null)
     {
         if (is_array($route_params)) {
             $type = $this->validateRouteArray($route_params);
@@ -363,6 +364,29 @@ class Routing
         $this->matching_route['method'] = $request_method;
         $this->matching_route['middleware'] = $route_params['middleware'] ?? $middleware ?? null;
         $this->matching_route['assets'] = $route_params['assets'] ?? $assets ?? null;
+
+        if ($models !== null && is_array($route_params) && array_key_exists('models', $route_params)) {
+            if (!is_array($models) || !is_array($route_params['models'])) {
+                throw new RouteException('Value of models key in route must be an array');
+            }
+            $models = array_merge($models, $route_params['models']);
+        }
+
+        $models = $models ?? $route_params['models'] ?? array();
+
+        foreach ($models as $key => $model) {
+            if (!is_string($key) || !is_string($model)) {
+                throw new RouteException('Every key and value in the models array must be a string');
+            }
+            if (!class_exists($model)) {
+                throw new RouteException($model . ' class not found');
+            }
+            $model_classes[$key] = new $model();
+            if (!$model_classes[$key] instanceof Model) {
+                throw new RouteException($model . ' is not instance of Wizard\Src\Modules\Database\Model');
+            }
+        }
+        $this->matching_route['models'] = $model_classes ?? array();
     }
 }
 
