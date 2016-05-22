@@ -39,7 +39,7 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
      */
     public function showErrorPage()
     {
-        $path = App::$Root.'/Resources/ErrorPages/main.php';
+        $path = App::$Root.'/Resources/ErrorPages/Main.php';
         $parameters = [
             'message' => $this->getMessage(),
             'line' => $this->getLine(),
@@ -66,7 +66,7 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
      */
     public static function showStaticErrorPage(\Throwable $exception)
     {
-        $path = App::$Root.'/Resources/ErrorPages/main.php';
+        $path = App::$Root.'/Resources/ErrorPages/Main.php';
         $parameters = [
             'message' => $exception->getMessage(),
             'line' => $exception->getLine(),

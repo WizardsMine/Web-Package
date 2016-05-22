@@ -173,7 +173,7 @@ class TemplateLoader
         if (!file_exists($path)) {
             return false;
         }
-        $exploded = explode('\\', $path);
+        $exploded = explode('/', $path);
         $exploded_file = explode('.', $exploded[count($exploded) - 1]);
         if (count($exploded_file) == 3 && $exploded_file[1] == 'template') {
             return true;
