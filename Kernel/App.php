@@ -120,7 +120,7 @@ class App
      */
     public static function setResponse(string $absolute_path, array $parameters = array())
     {
-        $path = str_replace('/', '\\', $absolute_path);
+        $path = str_replace('\\', '/', $absolute_path);
         if (file_exists($path) === false) {
             throw new WizardRuntimeException($path. ' response file not found');
         }
