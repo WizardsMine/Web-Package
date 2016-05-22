@@ -6,7 +6,7 @@ trait BaseFunctions
 {
     public function checkAndIncludeFile($root, $path)
     {
-        $file_path = str_replace('/', '\\', $path);
+        $file_path = str_replace('\\', '/', $path);
         $path = $root.$file_path.'.php';
         if (file_exists($path)) {
             require_once $path;
