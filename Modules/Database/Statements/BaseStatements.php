@@ -93,7 +93,7 @@ trait BaseStatements
             if (!is_string($column)) {
                 throw new ModelException('Column in update statement must be an string');
             }
-            if (!is_string($value)) {
+            if (!is_string($value) && !is_null($value)) {
                 throw new ModelException('Value in update statement must be an string');
             }
             if ($loop === 0) {

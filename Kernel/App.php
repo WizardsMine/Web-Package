@@ -7,7 +7,7 @@ use Wizard\Http\HttpKernel;
 use Wizard\Modules\Config\Config;
 use Wizard\Modules\Database\Database;
 use Wizard\Modules\Exception\DatabaseException;
-use WizardModules\Exception\SessionException;
+use Wizard\Modules\Exception\SessionException;
 use Wizard\Modules\Sessions\WizardSessionHandler;
 use Wizard\Templating\TemplateLoader;
 
