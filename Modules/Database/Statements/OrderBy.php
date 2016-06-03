@@ -20,13 +20,13 @@ trait OrderBy
                 if ($loop === 0) {
                     $orderBy .= $type.' ASC';
                 } else {
-                    $orderBy .= ','.$type. 'ASC';
+                    $orderBy .= ', '.$type. 'ASC';
                 }
             } elseif (is_string($column) && is_string($type)) {
                 if ($loop === 0) {
                     $orderBy .= $column.' '.$type;
                 } else {
-                    $orderBy .= ','.$column.' '.$type;
+                    $orderBy .= ', '.$column.' '.$type;
                 }
             } else {
                 throw new ModelException('Invalid order by syntax');
@@ -51,6 +51,10 @@ trait OrderBy
             $Class->joinType = $backtrace->joinType;
             $Class->joinValue = $backtrace->joinValue;
             $Class->joinTable = $backtrace->joinTable;
+        }
+        if (property_exists($backtrace, 'where')) {
+            $Class->where = $backtrace->where;
+            $Class->parameters = $backtrace->parameters;
         }
         switch ($backtrace->type) {
             case 'SELECT':

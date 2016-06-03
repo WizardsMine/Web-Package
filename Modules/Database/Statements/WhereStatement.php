@@ -24,22 +24,23 @@ trait WhereStatement
                 if (count(explode('.', $value[0])) === 1) {
                     //Add table to column
                     if ($loop === 0) {
-                        $where .= $table.'.'.$value[0].' '.$value[1].' ?';
+                        $where .= $table . '.' . $value[0] . ' ' . $value[1] . ' ?';
                         $bindParams[] = $value[2];
                     } else {
-                        $where .= ' AND '.$table.'.'.$value[0].' '.$value[1].' ?';
+                        $where .= ' AND ' . $table . '.' . $value[0] . ' ' . $value[1] . ' ?';
                         $bindParams[] = $value[2];
                     }
                 } else {
                     if ($loop === 0) {
-                        $where .= $value[0].' '.$value[1].' ?';
+                        $where .= $value[0] . ' ' . $value[1] . ' ?';
                         $bindParams[] = $value[2];
                     } else {
-                        $where .= ' AND '.$value[0].' '.$value[1].' ?';
+                        $where .= ' AND ' . $value[0] . ' ' . $value[1] . ' ?';
                         $bindParams[] = $value[2];
                     }
                 }
-            } elseif (is_string($parameter) && is_string($value)) {
+            } elseif (is_string($parameter) && (is_string($value) || is_int($value) || is_null($value))) {
+//            } elseif (is_string($parameters) && is_string($value)) {
                 if (count(explode('.', $parameter)) === 1) {
                     if ($loop === 0) {
                         $where .= $table.'.'.$parameter.'=?';
@@ -64,7 +65,7 @@ trait WhereStatement
         }
 
         $Class = new class {
-            use SubWhereStatements, FetchAndExecute;
+            use SubWhereStatements, FetchAndExecute, OrderBy;
         };
         $Class->connection = $backtrace->connection;
         $Class->type = $backtrace->type;
