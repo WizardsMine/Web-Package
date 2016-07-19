@@ -21,22 +21,54 @@ trait WhereStatement
                 if (count($value) !== 3) {
                     throw new ModelException('An array in where clause as parameter must contain 3 values');
                 }
+                if ($value[1] == 'IN' && is_array($value[2])) {
+                    $inloop = 0;
+                    $invalue = '';
+                    foreach ($value[2] as $item) {
+                        $bindParams[] = $item;
+                        if ($inloop == 0) {
+                            $invalue .= '?';
+                        } else {
+                            $invalue .= ', ?';
+                        }
+                        $inloop++;
+                    }
+                    $is_in = true;
+                } else {
+                    $is_in = false;
+                }
                 if (count(explode('.', $value[0])) === 1) {
                     //Add table to column
                     if ($loop === 0) {
-                        $where .= $table . '.' . $value[0] . ' ' . $value[1] . ' ?';
-                        $bindParams[] = $value[2];
+                        if ($is_in == true) {
+                            $where .= $table . '.' . $value[0] . ' IN ('. $invalue .')';
+                        } else {
+                            $where .= $table . '.' . $value[0] . ' ' . $value[1] . ' ?';
+                            $bindParams[] = $value[2];
+                        }
                     } else {
-                        $where .= ' AND ' . $table . '.' . $value[0] . ' ' . $value[1] . ' ?';
-                        $bindParams[] = $value[2];
+                        if ($is_in == true) {
+                            $where .= ' AND ' . $table . '.' . $value[0] . ' IN ('. $invalue. ')';
+                        } else {
+                            $where .= ' AND ' . $table . '.' . $value[0] . ' ' . $value[1] . ' ?';
+                            $bindParams[] = $value[2];
+                        }
                     }
                 } else {
                     if ($loop === 0) {
-                        $where .= $value[0] . ' ' . $value[1] . ' ?';
-                        $bindParams[] = $value[2];
+                        if ($is_in == true) {
+                            $where .= $value[0] . ' IN ('. $invalue .')';
+                        } else {
+                            $where .= $value[0] . ' ' . $value[1] . ' ?';
+                            $bindParams[] = $value[2];
+                        }
                     } else {
-                        $where .= ' AND ' . $value[0] . ' ' . $value[1] . ' ?';
-                        $bindParams[] = $value[2];
+                        if ($is_in == true) {
+                            $where .= ' AND ' . $value[0] . ' IN ('. $invalue .')';
+                        } else {
+                            $where .= ' AND ' . $value[0] . ' ' . $value[1] . ' ?';
+                            $bindParams[] = $value[2];
+                        }
                     }
                 }
             } elseif (is_string($parameter) && (is_string($value) || is_int($value) || is_null($value))) {
