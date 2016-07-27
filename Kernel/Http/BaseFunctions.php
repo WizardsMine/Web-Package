@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Http;
+namespace Wizard\Kernel\Http;
 
 trait BaseFunctions
 {

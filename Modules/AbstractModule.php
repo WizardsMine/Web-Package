@@ -15,7 +15,6 @@ abstract class AbstractModule
     public $root;
 
     public $config;
-    public $debugger;
     public $filesystem;
     public $mail;
     public $session;
@@ -25,8 +24,6 @@ abstract class AbstractModule
     function __construct() {
 
         $this->config = new Config();
-
-        $this->debugger = new Debugger();
 
         $this->filesystem = new Filesystem();
 

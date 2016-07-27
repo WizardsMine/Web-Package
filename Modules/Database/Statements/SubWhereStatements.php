@@ -141,6 +141,8 @@ trait SubWhereStatements
         $Class->connection = $backtrace->connection;
         $Class->type = $backtrace->type;
         $Class->table = $backtrace->table;
+        $Class->where = $backtrace->where;
+        $Class->parameters = $backtrace->parameters;
         if (property_exists($backtrace, 'hasJoin') && $backtrace->hasJoin === true) {
             $Class->hasJoin = $backtrace->hasJoin;
             $Class->joinType = $backtrace->joinType;

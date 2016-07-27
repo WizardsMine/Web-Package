@@ -93,8 +93,8 @@ trait BaseStatements
             if (!is_string($column)) {
                 throw new ModelException('Column in update statement must be an string');
             }
-            if (!is_string($value)) {
-                throw new ModelException('Value in update statement must be an string');
+            if (!is_string($value) && !is_null($value) && !is_int($value)) {
+                throw new ModelException('Value in update statement must be an string, int or null');
             }
             if ($loop === 0) {
                 $update .= $table.'.'.$column.'=?';
@@ -141,8 +141,8 @@ trait BaseStatements
                     throw new ModelException('Parameters passed to insert method must all have an key or none must have a key');
                 }
                 unset($insertColumns);
-                if (!is_string($value)) {
-                    throw new ModelException('Insert value must be a string');
+                if (!is_string($value) && !is_int($value)) {
+                    throw new ModelException('Insert value must be a string or int');
                 }
                 if ($loop === 0) {
                     $insertValues .= '?';
@@ -155,8 +155,8 @@ trait BaseStatements
                 if (!isset($insertColumns)) {
                     throw new ModelException('Parameters passed to insert method must all have an key or none must have a key');
                 }
-                if (!is_string($value)) {
-                    throw new ModelException('Insert value must be a string');
+                if (!is_string($value) && !is_int($value)) {
+                    throw new ModelException('Insert value must be a string or int');
                 }
                 if ($loop === 0) {
                     $insertColumns .= $column;

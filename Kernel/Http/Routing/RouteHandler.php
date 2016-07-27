@@ -1,18 +1,12 @@
 <?php
 
-namespace Wizard\Http\Routing;
+namespace Wizard\Kernel\Http\Routing;
 
-use Wizard\Http\Exception\RouteException;
 use Wizard\Kernel\App;
 use Wizard\Modules\Database\Model;
 
-class Routing
+class RouteHandler
 {
-    /**
-     * @var string
-     * Holds the root of this project.
-     */
-    private $root;
 
     /**
      * @var string
@@ -39,13 +33,6 @@ class Routing
      */
     public $matching_route = array();
 
-    /**
-     * Routing constructor.
-     */
-    function __construct()
-    {
-        $this->root = App::$Root;
-    }
 
     /**
      * @param string|null $uri
@@ -161,7 +148,7 @@ class Routing
      */
     private function getRouteFile()
     {
-        $path = $this->root . '/App/Http/routes.php';
+        $path = App::$root. '/App/Http/routes.php';
         if (!file_exists($path)) {
             throw new RouteException('App/Http/routes.php not found', 'Make sure you have the routes.php under the App/Http directory');
         }

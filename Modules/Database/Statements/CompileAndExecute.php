@@ -8,7 +8,7 @@ trait CompileAndExecute
 {
     private function executeStatement(\PDO $pdo, string $statement, array $parameters = array())
     {
-        //echo $statement.'<br>';
+//        echo $statement.'<br>';
         $stmt = $pdo->prepare($statement);
         $stmt->execute($parameters);
         return $stmt;

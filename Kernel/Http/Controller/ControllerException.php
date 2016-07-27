@@ -1,10 +1,10 @@
 <?php
 
-namespace Wizard\Http\Exception;
+namespace Wizard\Kernel\Http\Controller;
 
 use Wizard\Exception\WizardRuntimeException;
 
-class ControllerException extends WizardRuntimeException implements ControllerExceptionInterface
+class ControllerException extends WizardRuntimeException
 {
 
     function __construct($message, $solution = null)

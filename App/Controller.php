@@ -13,7 +13,7 @@ class Controller extends AbstractModule
     {
         parent::__construct();
         $this->root = $root;
-        $this->baseUri = App::$BaseUri;
+        $this->baseUri = App::$base_uri;
     }
 
     public function request(string $uri)

@@ -1,10 +1,10 @@
 <?php
 
-namespace Wizard\Http\Exception;
+namespace Wizard\Kernel\Http\Routing;
 
 use Wizard\Exception\WizardRuntimeException;
 
-class RouteException extends WizardRuntimeException implements RouteExceptionInterface
+class RouteException extends WizardRuntimeException
 {
 
     function __construct($message, $solution = null)

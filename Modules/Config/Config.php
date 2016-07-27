@@ -9,7 +9,7 @@ class Config
 
     public static function getFile($path)
     {
-        $path = App::$Root.'/Config/'.$path.'.php';
+        $path = App::$root.'/Config/'.$path.'.php';
         //echo $path;
         if (!file_exists($path)) {
             return null;
