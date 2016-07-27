@@ -2,11 +2,13 @@
 
 namespace Wizard\Kernel\Http;
 
+use Wizard\App\Request;
 use Wizard\Kernel\App;
-use Wizard\Http\Exception\ControllerException;
-use Wizard\Http\Exception\MiddlewareException;
+use Wizard\Kernel\Http\Controller\ControllerException;
 use Wizard\Kernel\Http\Controller\ControllerHandler;
+use Wizard\Kernel\Http\Middleware\MiddlewareException;
 use Wizard\Kernel\Http\Middleware\MiddlewareHandler;
+use Wizard\Kernel\Http\Routing\RouteException;
 use Wizard\Kernel\Http\Routing\RouteHandler;
 
 class HttpKernel
@@ -16,38 +18,6 @@ class HttpKernel
      * The route that is loaded.
      */
     static $route;
-    
-    /**
-     * @var RouteHandler
-     * Holds the route handler class.
-     */
-    public $route_handler;
-
-    /**
-     * @var MiddlewareHandler
-     * Holds the BaseMiddleware class
-     */
-    public $middleware_handler;
-
-    /**
-     * @var ControllerHandler
-     * Holds the BaseController class
-     */
-    public $controller_handler;
-
-    /**
-     * HttpKernel constructor.
-     * Set the base classes needed to process the whole http process
-     * Http stands for hypertext transfer protocol if you didn't know yet :)
-     */
-    function __construct()
-    {
-        $this->route_handler = new RouteHandler();
-
-        $this->middleware_handler = new MiddlewareHandler();
-
-        $this->controller_handler = new ControllerHandler();
-    }
 
     /**
      * @param string $uri
@@ -62,34 +32,19 @@ class HttpKernel
 
         HttpKernel::$route = $route;
 
-        $middleware_handler = $this->handleMiddleware($route);
-        if ($middleware_handler[0] === false) {
-            App::setResponse($middleware_handler['path'], $middleware_handler['parameters']);
-            return;
-        } elseif ($middleware_handler[0] == null) {
-            return;
-        }
+        $this->handleMiddleware($route);
+
         switch ($route['type']) {
             case 'controller':
-                $controller_handler = $this->handleController($route);
-                if ($controller_handler === true) {
-                    return;
-                } elseif (is_array($controller_handler)) {
-                    $path = $controller_handler['path'];
-                    $params = $controller_handler['params'];
-                    App::setResponse($path, $params);
-                    return;
-                } else {
-                    App::$Response = htmlentities($controller_handler);
-                }
+                $this->handleController($route);
                 break;
             case 'page':
-                $path = App::$Root.'/Resources/Views/'.$route['page'].'.php';
+                $path = App::$root.'/Resources/Views/'.$route['page'].'.php';
                 App::setResponse($path);
                 return;
                 break;
             case 'text':
-                App::$Response = htmlentities($route['text']);
+                App::$response = htmlentities($route['text']);
                 break;
         }
     }
@@ -105,56 +60,42 @@ class HttpKernel
      */
     private function handleRouting(string $uri, string $method = 'GET')
     {
-        $routing = $this->route_handler;
-        $routing->routeValidator($uri, $method);
-
-        return $routing->matching_route;
+        try {
+            $routing = new RouteHandler();
+            $routing->routeValidator($uri, $method);
+    
+            return $routing->matching_route;
+        } catch (RouteException $e) {
+            $e->showErrorPage();
+        }
     }
 
     /**
      * @param $route
      * @return bool
      *
-     * Handles the middleware and if it passes middleware (middleware returning true)
-     * it will return true.
-     *
-     * true = passed middleware
-     * null = new request
-     * false = load a page
+     * Handles the middleware and returns nothing because if the middleware returns a page or new request
+     * this request will be terminated.
      */
     private function handleMiddleware($route)
     {
         try {
-            $middleware = $this->middleware_handler->getMiddleware($route);
+            $middleware_handler = new MiddlewareHandler();
+            $middleware_instances = $middleware_handler->getMiddlewareInstances($route);
 
-            if ($middleware === false) {
-                return [true];
-            }
-            $executed = $this->middleware_handler->executeMiddleware($middleware);
-            
-            $type = $this->middleware_handler->processHandler($executed);
+            $request = $this->prepareRequest();
 
-            if ($type === true) {
-                return [true];
-            } elseif ($type == 'request') {
-                $request = $executed['request'];
-                if (!is_string($request)) {
-                    throw new MiddlewareException('Request returned by middleware needs to be a string');
+            foreach ($middleware_instances as $middleware_instance) {
+                $handle = $middleware_handler->executeMiddleware($middleware_instance, $request);
+
+                if ($handle === true) {
+                    continue;
+                } elseif (is_array($handle)) {
+                    $this->processHandler($handle, 'middleware');
+                } else {
+                    throw new MiddlewareException('Invalid return value from middleware');
                 }
-                $request_method = $executed['method'] ?? 'GET';
-                $this->handleRequest($request, $request_method);
-                return [null];
-            } elseif ($type == 'page') {
-                $page = $executed['page'];
-                if (!is_string($page)) {
-                    throw new MiddlewareException('Page returned by middleware needs to be a string');
-                }
-                $path = App::$root.'/Resources/Views/'.$page.'.php';
-            } else {
-                $page = $executed['error'] ?? 'AccessDenied';
-                $path = App::$root.'/Resources/ErrorPages/'. $page. '.php';
             }
-            return [false, 'path' => $path, 'parameters' => $this->controller_handler->getParams($executed) ?? array()];
         } catch (MiddlewareException $e) {
             $e->showErrorPage();
         }
@@ -169,36 +110,81 @@ class HttpKernel
     private function handleController($route)
     {
         try {
-            $base_controller = $this->controller_handler;
+            $controller_handler = new ControllerHandler();
 
-            $location = $base_controller->getController($route);
-            $controller = $base_controller->executeController($location);
+            $location = $controller_handler->getController($route);
+            $controller = $controller_handler->executeController($location, $this->prepareRequest());
+            $this->processHandler($controller, 'controller');
 
-            if (is_array($controller) && array_key_exists('request', $controller) && is_string($controller['request'])) {
-                $this->handleRequest($controller['request'], $controller['method'] ?? 'GET');
-                return true;
-            } elseif (is_array($controller) && array_key_exists('page', $controller) && is_string($controller['page'])) {
-                $params = $base_controller->getParams($controller);
-                $path = App::$root.'/Resources/Views/'.$controller['page'].'.php';
-                return ['path' => $path, 'params' => $params];
-            } elseif (is_string($controller)) {
-                return $controller;
-            } else {
-                throw new ControllerException('Invalid controller return syntax');
-            }
         } catch (ControllerException $e) {
             $e->showErrorPage();
         }
     }
+
+    /**
+     * @param $handler
+     * @param $type
+     * @return bool|string
+     * @throws HttpKernelException
+     *
+     * Checks what type the middleware/controller method has returned.
+     * The only options are page request and text.
+     */
+    private function processHandler(array $handler, string $type)
+    {
+        if (array_key_exists('type', $handler)) {
+            switch ($handler['type']) {
+                case 'page':
+                    if (!array_key_exists('page', $handler)) {
+                        throw new HttpKernelException($type .' handler return type is page but page key is not found');
+                    }
+                    if (!is_string($handler['page'])) {
+                        throw new HttpKernelException('Page returned by '. $type .' handler needs to be a string');
+                    }
+                    $path = App::$root.'/Resources/Views/'.$handler['page'].'.php';
+                    App::setResponse($path, $handler['params'] ?? array());
+                    App::send();
+                    App::terminate();
+                    break;
+
+                case 'request':
+                    if (!array_key_exists('uri', $handler)) {
+                        throw new HttpKernelException($type .' handler return type is request but uri key is not found');
+                    }
+                    if (!is_string($handler['uri'])) {
+                        throw new HttpKernelException('Uri returned by '. $type .' handler needs to be a string');
+                    }
+                    App::sendRequest($handler['uri']);
+                    App::terminate();
+                    break;
+                
+                case 'text':
+                    if (!array_key_exists('text', $handler)) {
+                        throw new HttpKernelException($type .' handler return type is text but text key is not found');
+                    }
+                    if (!is_string($handler['text'])) {
+                        throw new HttpKernelException('Text returned by '. $type .' handler needs to be a string');
+                    }
+                    App::$response = htmlentities($handler['text']);
+                    App::send();
+                    App::terminate();
+                    break;
+            }
+        }
+        throw new HttpKernelException('Return value from '. $type .' handler is incorrect');
+    }
+
+    /**
+     * @return Request
+     * Prepares the request that is send to the middleware handle method.
+     */
+    private function prepareRequest()
+    {
+        $request = new Request();
+        $request->route_parameters = HttpKernel::$route['params'];
+
+        $request->models = HttpKernel::$route['models'];
+
+        return $request;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-

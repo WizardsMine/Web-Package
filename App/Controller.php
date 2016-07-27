@@ -9,10 +9,10 @@ class Controller extends AbstractModule
 {
     public $baseUri;
 
-    function __construct($root)
+    function __construct()
     {
         parent::__construct();
-        $this->root = $root;
+        $this->root = App::$root;
         $this->baseUri = App::$base_uri;
     }
 

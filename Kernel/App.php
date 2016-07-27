@@ -92,7 +92,6 @@ class App
         $http_kernel = new HttpKernel();
 
         $http_kernel->handleRequest($this->uri, $this->method);
-
     }
 
     /**
@@ -157,11 +156,21 @@ class App
 
     /**
      * @param $message
-     * Closing the app and shutting down database connections and sessions.
+     * Closing the app.
+     * TODO shutting down database connections and sessions.
      */
     public static function terminate(string $message = '')
     {
         die($message);
+    }
+
+    /**
+     * @param string $uri
+     * R
+     */
+    public static function sendRequest(string $uri)
+    {
+        header('Location: '. self::$base_uri . $uri);
     }
 
     /**
