@@ -1,30 +1,22 @@
 <?php
 
-namespace Wizard\Http\Controller;
+namespace Wizard\Kernel\Http\Controller;
 
 use Wizard\App\Controller;
 use Wizard\App\Request;
-use Wizard\Http\BaseFunctions;
-use Wizard\Http\Exception\ControllerException;
-use Wizard\Http\HttpKernel;
 use Wizard\Kernel\App;
+use Wizard\Kernel\Http\BaseFunctions;
+use Wizard\Kernel\Http\HttpKernel;
 
-class BaseController
+class ControllerHandler
 {
-    use BaseFunctions;
-
+    Use BaseFunctions;
 
     /**
      * @var $controllerObject
      * Holds the class of the executed controller.
      */
     static $controllerObject;
-
-    /**
-     * @var string
-     * Holds the project root.
-     */
-    private $root;
 
     /**
      * @var array|mixed
@@ -37,15 +29,6 @@ class BaseController
      * The path where the controllers can be found.
      */
     const CONTROLLER_PATH = '\\App\\Http\\Controllers\\';
-
-    /**
-     * BaseController constructor.
-     * Set the root.
-     */
-    function __construct()
-    {
-        $this->root = App::$Root;
-    }
 
     /**
      * @param $route
@@ -64,7 +47,7 @@ class BaseController
 
         $location = $this->getControllerLocation($route['controller']);
 
-        if (!$this->checkAndIncludeFile($this->root, self::CONTROLLER_PATH . $location['file'])) {
+        if (!$this->checkAndIncludeFile(App::$root, self::CONTROLLER_PATH . $location['file'])) {
             throw new ControllerException('Controller file not found');
         }
         if (!$this->checkClassExist(self::CONTROLLER_PATH . $location['class'])) {
@@ -86,7 +69,7 @@ class BaseController
     {
         $class = str_replace('/', '\\', self::CONTROLLER_PATH.$location['class']);
 
-        $controller_object = new $class($this->root);
+        $controller_object = new $class(App::$root);
 
         if (!$controller_object instanceof Controller) {
             throw new ControllerException($location['class']. " doesn't extend the Controller class");
@@ -108,9 +91,9 @@ class BaseController
     private function prepareRequest()
     {
         $request = new Request();
-        $request->route_parameters = HttpKernel::$Route['params'];
+        $request->route_parameters = HttpKernel::$route['params'];
 
-        $request->models = HttpKernel::$Route['models'];
+        $request->models = HttpKernel::$route['models'];
 
         return $request;
     }

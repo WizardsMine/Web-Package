@@ -1,39 +1,39 @@
 <?php
 
-namespace Wizard\Http;
+namespace Wizard\Kernel\Http;
 
-use Wizard\Http\Controller\BaseController;
+use Wizard\Kernel\App;
 use Wizard\Http\Exception\ControllerException;
 use Wizard\Http\Exception\MiddlewareException;
-use Wizard\Http\Middleware\BaseMiddleware;
-use Wizard\Http\Routing\Routing;
-use Wizard\Kernel\App;
+use Wizard\Kernel\Http\Controller\ControllerHandler;
+use Wizard\Kernel\Http\Middleware\MiddlewareHandler;
+use Wizard\Kernel\Http\Routing\RouteHandler;
 
 class HttpKernel
 {
     /**
      * @var array
-     * The route that is loaded
+     * The route that is loaded.
      */
-    static $Route;
+    static $route;
+    
+    /**
+     * @var RouteHandler
+     * Holds the route handler class.
+     */
+    public $route_handler;
 
     /**
-     * @var Routing
-     * Holds the Routing class
-     */
-    public $Routing;
-
-    /**
-     * @var BaseMiddleware
+     * @var MiddlewareHandler
      * Holds the BaseMiddleware class
      */
-    public $BaseMiddleware;
+    public $middleware_handler;
 
     /**
-     * @var BaseController
+     * @var ControllerHandler
      * Holds the BaseController class
      */
-    public $BaseController;
+    public $controller_handler;
 
     /**
      * HttpKernel constructor.
@@ -42,11 +42,11 @@ class HttpKernel
      */
     function __construct()
     {
-        $this->Routing = new Routing();
+        $this->route_handler = new RouteHandler();
 
-        $this->BaseMiddleware = new BaseMiddleware();
+        $this->middleware_handler = new MiddlewareHandler();
 
-        $this->BaseController = new BaseController();
+        $this->controller_handler = new ControllerHandler();
     }
 
     /**
@@ -60,7 +60,7 @@ class HttpKernel
     {
         $route = $this->handleRouting($uri, $method);
 
-        HttpKernel::$Route = $route;
+        HttpKernel::$route = $route;
 
         $middleware_handler = $this->handleMiddleware($route);
         if ($middleware_handler[0] === false) {
@@ -105,7 +105,7 @@ class HttpKernel
      */
     private function handleRouting(string $uri, string $method = 'GET')
     {
-        $routing = $this->Routing;
+        $routing = $this->route_handler;
         $routing->routeValidator($uri, $method);
 
         return $routing->matching_route;
@@ -125,14 +125,14 @@ class HttpKernel
     private function handleMiddleware($route)
     {
         try {
-            $middleware = $this->BaseMiddleware->getMiddleware($route);
+            $middleware = $this->middleware_handler->getMiddleware($route);
 
             if ($middleware === false) {
                 return [true];
             }
-            $executed = $this->BaseMiddleware->executeMiddleware($middleware);
+            $executed = $this->middleware_handler->executeMiddleware($middleware);
             
-            $type = $this->BaseMiddleware->processHandler($executed);
+            $type = $this->middleware_handler->processHandler($executed);
 
             if ($type === true) {
                 return [true];
@@ -149,12 +149,12 @@ class HttpKernel
                 if (!is_string($page)) {
                     throw new MiddlewareException('Page returned by middleware needs to be a string');
                 }
-                $path = App::$Root.'/Resources/Views/'.$page.'.php';
+                $path = App::$root.'/Resources/Views/'.$page.'.php';
             } else {
                 $page = $executed['error'] ?? 'AccessDenied';
-                $path = App::$Root.'/Resources/ErrorPages/'. $page. '.php';
+                $path = App::$root.'/Resources/ErrorPages/'. $page. '.php';
             }
-            return [false, 'path' => $path, 'parameters' => $this->BaseController->getParams($executed) ?? array()];
+            return [false, 'path' => $path, 'parameters' => $this->controller_handler->getParams($executed) ?? array()];
         } catch (MiddlewareException $e) {
             $e->showErrorPage();
         }
@@ -169,7 +169,7 @@ class HttpKernel
     private function handleController($route)
     {
         try {
-            $base_controller = $this->BaseController;
+            $base_controller = $this->controller_handler;
 
             $location = $base_controller->getController($route);
             $controller = $base_controller->executeController($location);
@@ -179,7 +179,7 @@ class HttpKernel
                 return true;
             } elseif (is_array($controller) && array_key_exists('page', $controller) && is_string($controller['page'])) {
                 $params = $base_controller->getParams($controller);
-                $path = App::$Root.'/Resources/Views/'.$controller['page'].'.php';
+                $path = App::$root.'/Resources/Views/'.$controller['page'].'.php';
                 return ['path' => $path, 'params' => $params];
             } elseif (is_string($controller)) {
                 return $controller;

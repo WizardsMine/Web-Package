@@ -8,9 +8,6 @@ use Wizard\Modules\Exception\AssetException;
 
 class AssetsManager
 {
-    private $root;
-
-    private $baseUri;
 
     private $assets;
 
@@ -18,8 +15,6 @@ class AssetsManager
 
     public function __construct($assets_name = null)
     {
-        $this->root = App::$Root;
-        $this->baseUri = App::$BaseUri;
         $this->assets = $assets_name;
     }
 
@@ -131,11 +126,11 @@ class AssetsManager
                         $assets['css'][] = htmlentities("<link rel='stylesheet' href='$path'>");
                         break;
                     }
-                    if (!file_exists($this->root.'/Resources/Assets/css/'.$path.'.css')) {
+                    if (!file_exists(App::$root.'/Resources/Assets/css/'.$path.'.css')) {
                         throw new AssetException('Asset css file not found');
                     }
 
-                    $realPath = $this->baseUri.'/Resources/Assets/css/'.$path.'.css';
+                    $realPath = App::$base_uri.'/Resources/Assets/css/'.$path.'.css';
                     $assets['css'][] = htmlentities("<link rel='stylesheet' href='$realPath'>");
                     break;
 
@@ -144,10 +139,10 @@ class AssetsManager
                         $assets['js'][] = htmlentities("<script src='$path'></script>");
                         break;
                     }
-                    if (!file_exists($this->root.'/Resources/Assets/js/'.$path.'.js')) {
+                    if (!file_exists(App::$root.'/Resources/Assets/js/'.$path.'.js')) {
                         throw new AssetException('Asset css file not found');
                     }
-                    $realPath = $this->baseUri.'/Resources/Assets/js/'.$path.'.js';
+                    $realPath = App::$base_uri.'/Resources/Assets/js/'.$path.'.js';
                     $assets['js'][] = htmlentities("<script src='$realPath'></script>");
                     break;
 
@@ -179,10 +174,10 @@ class AssetsManager
                 $image_links[$variable] = $image;
                 continue;
             }
-            if (!file_exists($this->root.'/Resources/Assets/img/'.$image)) {
+            if (!file_exists(App::$root.'/Resources/Assets/img/'.$image)) {
                 throw new AssetException('Asset image file not found');
             }
-            $image_links[$variable] = $this->baseUri.'/Resources/Assets/img/'.$image;
+            $image_links[$variable] = App::$base_uri.'/Resources/Assets/img/'.$image;
         }
         return $image_links;
     }
@@ -208,10 +203,10 @@ class AssetsManager
                 $validated_links[$variable] = $link;
                 continue;
             }
-            if (!file_exists($this->root.'/Resources/Assets/'.$link)) {
+            if (!file_exists(App::$root.'/Resources/Assets/'.$link)) {
                 throw new AssetException('Assets file not found '.$link);
             }
-            $validated_links[$variable] = $this->baseUri. '/Resources/Assets/'.$link;
+            $validated_links[$variable] = App::$base_uri. '/Resources/Assets/'.$link;
         }
         return $validated_links;
     }

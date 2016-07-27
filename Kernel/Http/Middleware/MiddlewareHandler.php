@@ -1,23 +1,14 @@
 <?php
 
-namespace Wizard\Http\Middleware;
+namespace Wizard\Kernel\Http\Middleware;
 
-use Wizard\Exception\WizardRuntimeException;
 use Wizard\App\Middleware;
-use Wizard\Http\BaseFunctions;
-use Wizard\Http\Exception\MiddlewareException;
 use Wizard\Http\Interfaces\MiddlewareInterface;
-use Wizard\Kernel\App;
+use Wizard\Kernel\Http\BaseFunctions;
 
-class BaseMiddleware
+class MiddlewareHandler
 {
     use BaseFunctions;
-
-    /**
-     * @var static
-     * Holds the root of the project.
-     */
-    private $root;
 
     /**
      * @var array|mixed
@@ -30,15 +21,6 @@ class BaseMiddleware
      * The path from the project root to the middleware folder.
      */
     const MIDDLEWARE_PATH = '\\App\\Http\\Middleware\\';
-
-    /**
-     * BaseMiddleware constructor.
-     * @throws WizardRuntimeException
-     */
-    function __construct()
-    {
-        $this->root = App::$Root;
-    }
 
     /**
      * @param $route
@@ -144,14 +126,3 @@ class BaseMiddleware
         return $handle;
     }
 }
-
-
-
-
-
-
-
-
-
-
-

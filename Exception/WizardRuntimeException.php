@@ -26,7 +26,7 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
      * 
      * Sets the solution property and the type property
      */
-    function __construct(string $message = '' , $solution = '', $type = 'WizardRuntimeException')
+    function __construct(string $message = '', $solution = '', $type = 'WizardRuntimeException')
     {
         parent::__construct($message);
 
@@ -39,7 +39,7 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
      */
     public function showErrorPage()
     {
-        $path = App::$Root.'/Resources/ErrorPages/Main.php';
+        $path = App::$root.'/Resources/ErrorPages/Main.php';
         $parameters = [
             'message' => $this->getMessage(),
             'line' => $this->getLine(),
@@ -51,10 +51,9 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
         if (!file_exists($path)) {
             App::terminate('Something went horribly wrong');
         }
-        App::$ResponsePath = $path;
+        App::$response_path = $path;
         $content = App::loadResponseFile($path, $parameters);
-        App::$Response = htmlentities($content);
-//        ob_end_clean();
+        App::$response = htmlentities($content);
         App::send();
         App::terminate();
     }
@@ -66,7 +65,7 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
      */
     public static function showStaticErrorPage(\Throwable $exception)
     {
-        $path = App::$Root.'/Resources/ErrorPages/Main.php';
+        $path = App::$root.'/Resources/ErrorPages/Main.php';
         $parameters = [
             'message' => $exception->getMessage(),
             'line' => $exception->getLine(),
@@ -78,10 +77,9 @@ class WizardRuntimeException extends \Exception implements WizardExceptionInterf
         if (!file_exists($path)) {
             App::terminate('Something went horribly wrong');
         }
-        App::$ResponsePath = $path;
+        App::$response_path = $path;
         $content = App::loadResponseFile($path, $parameters);
-        App::$Response = htmlentities($content);
-//        ob_end_clean();
+        App::$response = htmlentities($content);
         App::send();
         App::terminate();
     }

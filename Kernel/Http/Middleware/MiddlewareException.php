@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Http\Exception;
+namespace Wizard\Kernel\Http\Middleware;
 
 use Wizard\Exception\WizardRuntimeException;
 

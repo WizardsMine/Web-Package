@@ -3,7 +3,7 @@
 namespace Wizard\Kernel;
 
 use Wizard\Exception\WizardRuntimeException;
-use Wizard\Http\HttpKernel;
+use Wizard\Kernel\Http\HttpKernel;
 use Wizard\Modules\Config\Config;
 use Wizard\Modules\Database\Database;
 use Wizard\Modules\Exception\DatabaseException;
@@ -14,41 +14,36 @@ use Wizard\Templating\TemplateLoader;
 class App
 {
     /**
-     * @var static mixed
+     * @var string
      * Keeps the response.
      */
-    static $Response;
+    static $response;
 
     /**
-     * @var static mixed
+     * @var string
      * Holds the path to the Response that is send to the user.
      * Null if it is plain html.
      */
-    static $ResponsePath = null;
+    static $response_path = '';
+
 
     /**
-     * @var static mixed
-     * Everything that gets echoed while running the application
+     * @var string
+     * The root directory of the project.
      */
-    static $Echoed = array();
-
-    /**
-     * @var static string
-     * The root directory of this project
-     */
-    static $Root;
+    static $root = '';
 
     /**
      * @var static array
      * Keeps all the debug messages to output at the end of the response
      */
-    static $Debug = array();
+    static $debug = array();
 
     /**
-     * @var static string
+     * @var string
      * Holds the base uri of the request.
      */
-    static $BaseUri;
+    static $base_uri;
 
     /**
      * @var string
@@ -75,38 +70,29 @@ class App
         $this->uri = $uri;
         $this->method = $method;
 
-        self::$BaseUri = substr($_SERVER['REQUEST_URI'], 0, strlen($_SERVER['REQUEST_URI']) - strlen(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['PHP_SELF'], '/index.php'))));
-
-        try {
-            $this->DBConnect();
-        } catch (DatabaseException $e) {
-            $e->showErrorPage();
-        } catch (\PDOException $e) {
-            WizardRuntimeException::showStaticErrorPage($e);
-        }
-        $this->startSession();
+        self::$base_uri = substr($_SERVER['REQUEST_URI'], 0, strlen($_SERVER['REQUEST_URI']) - strlen(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['PHP_SELF'], '/index.php'))));
     }
 
     /**
-     * @param HttpKernel $Kernel
+     * @throws DatabaseException
      *
-     * Here the app get forged and handled.
-     * Also catching all errors and exceptions
+     * Sets up the database and session handler.
      */
-    public function make(HttpKernel $Kernel)
+    public function prepare()
     {
-        try {
-//            ob_start();
-            $Kernel->handleRequest($this->uri, $this->method);
-        } catch (WizardRuntimeException $e) {
-            $e->showErrorPage();
-        } catch (\PDOException $e) {
-            WizardRuntimeException::showStaticErrorPage($e);
-        } catch (\Error $e) {
-            WizardRuntimeException::showStaticErrorPage($e);
-        } catch (\Throwable $e) {
-            WizardRuntimeException::showStaticErrorPage($e);
-        }
+        $this->setupDatabase();
+        $this->setupSession();
+    }
+
+    /**
+     * Start the app
+     */
+    public function start()
+    {
+        $http_kernel = new HttpKernel();
+
+        $http_kernel->handleRequest($this->uri, $this->method);
+
     }
 
     /**
@@ -124,20 +110,20 @@ class App
         if (file_exists($path) === false) {
             throw new WizardRuntimeException($path. ' response file not found');
         }
-        self::$ResponsePath = $path;
+        self::$response_path = $path;
 
-        $loader = new TemplateLoader(App::$Root.'/Storage/Cache/template.php');
+        $loader = new TemplateLoader(App::$root.'/Storage/Cache/template.php');
         $content = $loader->loadTemplate($path);
 
         $parameters = $loader->filterParameters($parameters);
 
-        $asset_name = HttpKernel::$Route['assets'];
+        $asset_name = HttpKernel::$route['assets'];
         $params = $loader->addAssets($content, $asset_name);
         $parameters['links'] = $params['links'];
         $parameters['images'] = $params['images'];
 
-        $cache = self::$Root.'/Storage/Cache/template.php';
-        App::$Response = self::loadResponseFile($cache, $parameters);
+        $cache = self::$root.'/Storage/Cache/template.php';
+        App::$response = self::loadResponseFile($cache, $parameters);
 
         return true;
     }
@@ -166,14 +152,14 @@ class App
      */
     public static function send()
     {
-        echo html_entity_decode(self::$Response);
+        echo html_entity_decode(self::$response);
     }
 
     /**
      * @param $message
      * Closing the app and shutting down database connections and sessions.
      */
-    public static function terminate($message = '')
+    public static function terminate(string $message = '')
     {
         die($message);
     }
@@ -181,7 +167,7 @@ class App
     /**
      * Starting the session with the custom made session handler
      */
-    private function startSession()
+    private function setupSession()
     {
         try {
             $handler = new WizardSessionHandler();
@@ -197,7 +183,7 @@ class App
      * Checking the database config file and when the connect_on_load key is set
      * to true it will automatically connect to the database.
      */
-    private function DBConnect()
+    private function setupDatabase()
     {
         $config = Config::getFile('database');
         if ($config === null) {

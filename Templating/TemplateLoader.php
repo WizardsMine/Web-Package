@@ -3,10 +3,10 @@
 namespace Wizard\Templating;
 
 use Wizard\App\Controller;
-use Wizard\Http\Controller\BaseController;
-use Wizard\Http\HttpKernel;
 use Wizard\Kernel\App;
 use Wizard\Assets\AssetsManager;
+use Wizard\Kernel\Http\Controller\ControllerHandler;
+use Wizard\Kernel\Http\HttpKernel;
 use Wizard\Templating\Exception\TemplateEngineException;
 use Wizard\Templating\Exception\TemplateException;
 
@@ -35,7 +35,6 @@ class TemplateLoader
      */
     function __construct($cache)
     {
-        $this->root = App::$Root;
         $this->cache = $cache;
     }
 
@@ -52,7 +51,7 @@ class TemplateLoader
 
         if (self::$useEngine) {
             try {
-                $engine = new TemplateEngine($this->root.'/Resources/Views/');
+                $engine = new TemplateEngine(App::$root.'/Resources/Views/');
                 $content = $engine->parse($content);
 
                 file_put_contents($this->cache, $content);
@@ -152,12 +151,12 @@ class TemplateLoader
                 throw new TemplateException('Cant have models as parameter key');
             }
         }
-        if (!empty(BaseController::$controllerObject)) {
-            $parameters['controller'] = BaseController::$controllerObject;
+        if (!empty(ControllerHandler::$controllerObject)) {
+            $parameters['controller'] = ControllerHandler::$controllerObject;
         } else {
-            $parameters['controller'] = new Controller($this->root);
+            $parameters['controller'] = new Controller(App::$root);
         }
-        $parameters['models'] = HttpKernel::$Route['models'];
+        $parameters['models'] = HttpKernel::$route['models'];
 
         return $parameters;
     }
