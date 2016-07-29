@@ -348,7 +348,7 @@ class RouteHandler
         $this->matching_route['route'] = $route;
         $this->matching_route['method'] = $request_method;
 
-        $this->matching_route['assets'] = array_unique(array_merge($route_params['assets'], $assets )) ?? $assets ?? array();
+        $this->matching_route['assets'] = array_unique(array_merge($route_params['assets'] ?? array(), $assets)) ?? array();
 
         if (is_array($route_params) && array_key_exists('middleware', $route_params)) {
             if (!is_array($route_params['middleware'])) {
