@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Modules\Exception;
+namespace Wizard\Sessions;
 
 use Wizard\Exception\WizardRuntimeException;
 

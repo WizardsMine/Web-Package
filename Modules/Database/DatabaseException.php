@@ -1,6 +1,6 @@
 <?php
 
-namespace Wizard\Modules\Exception;
+namespace Wizard\Modules\Database;
 
 use Wizard\Exception\WizardRuntimeException;
 

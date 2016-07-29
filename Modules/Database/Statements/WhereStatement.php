@@ -2,7 +2,7 @@
 
 namespace Wizard\Modules\Database\Statements;
 
-use Wizard\Modules\Exception\ModelException;
+use Wizard\Modules\Database\ModelException;
 
 trait WhereStatement
 {

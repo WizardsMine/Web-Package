@@ -2,13 +2,14 @@
 
 namespace Wizard\Kernel;
 
+use Wizard\App\Session;
 use Wizard\Exception\WizardRuntimeException;
 use Wizard\Kernel\Http\HttpKernel;
 use Wizard\Modules\Config\Config;
 use Wizard\Modules\Database\Database;
-use Wizard\Modules\Exception\DatabaseException;
-use Wizard\Modules\Exception\SessionException;
-use Wizard\Modules\Sessions\WizardSessionHandler;
+use Wizard\Modules\Database\DatabaseException;
+use Wizard\Sessions\SessionException;
+use Wizard\Sessions\SessionHandler;
 use Wizard\Templating\TemplateLoader;
 
 class App
@@ -45,6 +46,18 @@ class App
     static $base_uri;
 
     /**
+     * @var null|\PDO
+     * The global database connection from config.
+     */
+    static $db_connection = null;
+
+    /**
+     * @var null|SessionHandler
+     * The session handler.
+     */
+    static $session_handler = null;
+
+    /**
      * @var string
      * The requested uri by the user
      */
@@ -55,6 +68,7 @@ class App
      * The request method
      */
     private $method;
+
 
     /**
      * App constructor.
@@ -159,6 +173,7 @@ class App
      */
     public static function terminate(string $message = '')
     {
+        self::$session_handler->updateData(self::$session_handler->getId());
         die($message);
     }
 
@@ -177,9 +192,9 @@ class App
     private function setupSession()
     {
         try {
-            $handler = new WizardSessionHandler();
-            session_set_save_handler($handler, true);
-            session_start();
+            $handler = new SessionHandler();
+            $handler->setup();
+            self::$session_handler = $handler;
         } catch (SessionException $e) {
             $e->showErrorPage();
         }
@@ -196,12 +211,33 @@ class App
         if ($config === null) {
             throw new DatabaseException("Couldn't find database config file");
         }
+        if (($config['connect_on_load'] ?? false) === false) {
+            return;
+        }
         if (!is_array($config)) {
             throw new DatabaseException("Database config file didn't return an array");
         }
-        if ($config['connect_on_load'] ?? false === true) {
-            $database = new Database();
-            Database::$DBConnection = $database->connect();
+        if (!array_key_exists('driver', $config)) {
+            throw new DatabaseException("Couldn't find database driver");
         }
+        $driver = $config['driver'];
+        if ($driver != 'mysql') {
+            throw new DatabaseException('Unknown database driver');
+        }
+        $driver_config = $config[$driver];
+        if (!array_key_exists('host', $driver_config) || !is_string($driver_config['host'])) {
+            throw new DatabaseException('Couldnt find database host or host isnt a string');
+        }
+        if (!array_key_exists('database', $driver_config) || !is_string($driver_config['database'])) {
+            throw new DatabaseException('Couldnt find database database or database isnt a string');
+        }
+        if (!array_key_exists('user', $driver_config) || !is_string($driver_config['user'])) {
+            throw new DatabaseException('Couldnt find database user or user isnt a string');
+        }
+        if (!array_key_exists('password', $driver_config) || !is_string($driver_config['password'])) {
+            throw new DatabaseException('Couldnt find database password or password isnt a string');
+        }
+        $db = new Database();
+        App::$db_connection = $db->connect($driver_config['database'], $driver_config['host'], $driver_config['user'], $driver_config['password']);
     }
 }
