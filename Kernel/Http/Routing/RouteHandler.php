@@ -293,7 +293,13 @@ class RouteHandler
             if (!$this->checkRoute($route, $request_method)) {
                 continue;
             }
-            $this->setMatchingRoute($route, $route_params, $request_method, $group['middleware'] ?? array(), $group['assets'] ?? null, $group['models'] ?? array());
+            if (!is_array($group['middleware'] ?? array())) {
+                throw new RouteException('Route middleware must be an array');
+            }
+            if (!is_array($group['assets'] ?? array())) {
+                throw new RouteException('Route assets value must be an array');
+            }
+            $this->setMatchingRoute($route, $route_params, $request_method, $group['middleware'] ?? array(), $group['assets'] ?? array(), $group['models'] ?? array());
             return true;
         }
         return false;
@@ -304,14 +310,14 @@ class RouteHandler
      * @param $route_params
      * @param string $request_method
      * @param array $middleware
-     * @param null $assets
+     * @param array $assets
      * @param array $models
      * @throws RouteException
      *
      * Checks if the route and the route parameters are valid and adding them to the matching_route
      * property to be used further in the http process.
      */
-    private function setMatchingRoute($route, $route_params, string $request_method, array $middleware = array(), $assets = null, array $models = array())
+    private function setMatchingRoute($route, $route_params, string $request_method, array $middleware = array(), array $assets = array(), array $models = array())
     {
         if (is_array($route_params)) {
             $type = $this->validateRouteArray($route_params);
@@ -341,8 +347,8 @@ class RouteHandler
         $this->matching_route['params'] = $this->matching_route['params'] ?? array();
         $this->matching_route['route'] = $route;
         $this->matching_route['method'] = $request_method;
-        $this->matching_route['assets'] = $route_params['assets'] ?? $assets ?? null;
 
+        $this->matching_route['assets'] = array_unique(array_merge($route_params['assets'], $assets )) ?? $assets ?? array();
 
         if (is_array($route_params) && array_key_exists('middleware', $route_params)) {
             if (!is_array($route_params['middleware'])) {

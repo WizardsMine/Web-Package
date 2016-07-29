@@ -26,7 +26,6 @@ class App
      */
     static $response_path = '';
 
-
     /**
      * @var string
      * The root directory of the project.
@@ -69,7 +68,6 @@ class App
     {
         $this->uri = $uri;
         $this->method = $method;
-
         self::$base_uri = substr($_SERVER['REQUEST_URI'], 0, strlen($_SERVER['REQUEST_URI']) - strlen(substr($_SERVER['REQUEST_URI'], strpos($_SERVER['PHP_SELF'], '/index.php'))));
     }
 
@@ -166,7 +164,7 @@ class App
 
     /**
      * @param string $uri
-     * R
+     * Send the user to another location.
      */
     public static function sendRequest(string $uri)
     {
