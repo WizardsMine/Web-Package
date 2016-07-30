@@ -51,6 +51,7 @@ class SessionHandler
         $this->garbageCollection();
         if ($this->hasId() === false) {
             $key = $this->setId();
+            $this->key = $key;
         } else {
             $key = $this->getCookie();
             $this->updateTime($key);
