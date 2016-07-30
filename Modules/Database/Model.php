@@ -2,24 +2,21 @@
 
 namespace Wizard\Modules\Database;
 
-use Wizard\Exception\WizardRuntimeException;
 use Wizard\Modules\Database\Statements\BaseStatements;
 
 class Model extends Database
 {
     use BaseStatements;
 
+    /**
+     * @var string
+     * The table default table that will be used in the query builder.
+     */
     public $table;
-    
-    public $DB_Connection = null;
 
     function __construct()
     {
-        try {
-            $this->setTable();
-        } catch (\PDOException $e) {
-            WizardRuntimeException::showStaticErrorPage($e);
-        }
+        $this->setTable();
     }
     
     public function setTable(string $table = null)

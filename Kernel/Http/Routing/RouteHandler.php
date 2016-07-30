@@ -2,6 +2,7 @@
 
 namespace Wizard\Kernel\Http\Routing;
 
+use Wizard\App\Middleware;
 use Wizard\Kernel\App;
 use Wizard\Modules\Database\Model;
 
@@ -22,12 +23,6 @@ class RouteHandler
 
     /**
      * @var array
-     * Holds the array that the routes.php file returned.
-     */
-    private $routes;
-
-    /**
-     * @var array
      * This stores all information about the matching route
      * eg route, controller, middleware, assets.
      */
@@ -37,6 +32,7 @@ class RouteHandler
     /**
      * @param string|null $uri
      * @param string $method
+     * @throws RouteException
      *
      * This is where the routing process begins
      * it first checks if there is an uri and method.
@@ -50,15 +46,11 @@ class RouteHandler
             $this->uri = $uri;
         }
         $this->method = $method;
-
-        try {
-            if ($this->getRouteFile() === false) {
-                throw new RouteException('The routing file didnt return an array');
-            }
-            $this->scanRoutes($this->routes);
-        } catch (RouteException $e) {
-            $e->showErrorPage();
+        $routes = $this->getRouteFile();
+        if ($routes === false) {
+            throw new RouteException('The routing file didnt return an array');
         }
+        $this->scanRoutes($routes);
     }
 
     /**
@@ -139,7 +131,7 @@ class RouteHandler
     }
 
     /**
-     * @return bool
+     * @return mixed
      * @throws RouteException
      *
      * Checks if the /App/Http/routes.php exist and if it exists it will be put
@@ -152,9 +144,9 @@ class RouteHandler
         if (!file_exists($path)) {
             throw new RouteException('App/Http/routes.php not found', 'Make sure you have the routes.php under the App/Http directory');
         }
-        $this->routes = require $path;
-        if (is_array($this->routes)) {
-            return true;
+        $routes = require $path;
+        if (is_array($routes)) {
+            return $routes;
         }
         return false;
     }
@@ -282,7 +274,7 @@ class RouteHandler
      * @throws RouteException
      *
      * Checks if the group array has the route with specific request type that
-     * is matching with the incomming request.
+     * is matching with the incoming request.
      */
     private function groupHasRoute(array $group)
     {
@@ -301,7 +293,13 @@ class RouteHandler
             if (!$this->checkRoute($route, $request_method)) {
                 continue;
             }
-            $this->setMatchingRoute($route, $route_params, $request_method, $group['middleware'] ?? null, $group['assets'] ?? null, $group['models'] ?? null);
+            if (!is_array($group['middleware'] ?? array())) {
+                throw new RouteException('Route middleware must be an array');
+            }
+            if (!is_array($group['assets'] ?? array())) {
+                throw new RouteException('Route assets value must be an array');
+            }
+            $this->setMatchingRoute($route, $route_params, $request_method, $group['middleware'] ?? array(), $group['assets'] ?? array(), $group['models'] ?? array());
             return true;
         }
         return false;
@@ -311,15 +309,15 @@ class RouteHandler
      * @param $route
      * @param $route_params
      * @param string $request_method
-     * @param string|null $middleware
-     * @param null $assets
-     * @param null $models
+     * @param array $middleware
+     * @param array $assets
+     * @param array $models
      * @throws RouteException
      *
      * Checks if the route and the route parameters are valid and adding them to the matching_route
      * property to be used further in the http process.
      */
-    private function setMatchingRoute($route, $route_params, string $request_method, string $middleware = null, $assets = null, $models = null)
+    private function setMatchingRoute($route, $route_params, string $request_method, array $middleware = array(), array $assets = array(), array $models = array())
     {
         if (is_array($route_params)) {
             $type = $this->validateRouteArray($route_params);
@@ -349,11 +347,30 @@ class RouteHandler
         $this->matching_route['params'] = $this->matching_route['params'] ?? array();
         $this->matching_route['route'] = $route;
         $this->matching_route['method'] = $request_method;
-        $this->matching_route['middleware'] = $route_params['middleware'] ?? $middleware ?? null;
-        $this->matching_route['assets'] = $route_params['assets'] ?? $assets ?? null;
 
-        if ($models !== null && is_array($route_params) && array_key_exists('models', $route_params)) {
-            if (!is_array($models) || !is_array($route_params['models'])) {
+        $this->matching_route['assets'] = array_unique(array_merge($route_params['assets'] ?? array(), $assets)) ?? array();
+
+        if (is_array($route_params) && array_key_exists('middleware', $route_params)) {
+            if (!is_array($route_params['middleware'])) {
+                throw new RouteException('Value of middleware key in route must be an array');
+            }
+            $middleware = array_merge($middleware, $route_params['middleware']);
+        }
+
+        foreach ($middleware as $middleware_class) {
+            if (!is_string($middleware_class)) {
+                throw new RouteException('Every key and value in the middleware array must be a string');
+            }
+            if (!class_exists($middleware_class)) {
+                throw new RouteException($middleware_class . ' class not found');
+            }
+            $middleware_classes[] = new $middleware_class();
+        }
+        $this->matching_route['middleware'] = $middleware_classes ?? array();
+
+
+        if (is_array($route_params) && array_key_exists('models', $route_params)) {
+            if (!is_array($route_params['models'])) {
                 throw new RouteException('Value of models key in route must be an array');
             }
             $models = array_merge($models, $route_params['models']);
@@ -370,7 +387,7 @@ class RouteHandler
             }
             $model_classes[$key] = new $model();
             if (!$model_classes[$key] instanceof Model) {
-                throw new RouteException($model . ' is not instance of Wizard\Src\Modules\Database\Model');
+                throw new RouteException($model . ' is not instance of Wizard\Modules\Database\Model');
             }
         }
         $this->matching_route['models'] = $model_classes ?? array();

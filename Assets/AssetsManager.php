@@ -4,7 +4,6 @@ namespace Wizard\Assets;
 
 use Wizard\Kernel\App;
 use Wizard\Modules\Config\Config;
-use Wizard\Modules\Exception\AssetException;
 
 class AssetsManager
 {

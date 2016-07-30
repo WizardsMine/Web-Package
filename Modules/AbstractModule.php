@@ -2,12 +2,11 @@
 
 namespace Wizard\Modules;
 
+use Wizard\App\Session;
 use Wizard\Modules\Config\Config;
 use Wizard\Modules\Database\Model;
-use Wizard\Modules\Debugger\Debugger;
 use Wizard\Modules\Filesystem\Filesystem;
 use Wizard\Modules\Mail\Mail;
-use Wizard\Modules\Sessions\Session;
 
 abstract class AbstractModule
 {
@@ -29,9 +28,9 @@ abstract class AbstractModule
 
         $this->mail = new Mail();
 
-        $this->session = new Session();
-
         $this->model = new Model();
+
+        $this->session = new Session();
     }
 
 }

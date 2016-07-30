@@ -2,14 +2,15 @@
 
 namespace Wizard\App;
 
+use Wizard\Kernel\App;
 use Wizard\Modules\AbstractModule;
 
 class Middleware extends AbstractModule
 {
 
-    function __construct($root)
+    function __construct()
     {
         parent::__construct();
-        $this->root = $root;
+        $this->root = App::$root;
     }
 }

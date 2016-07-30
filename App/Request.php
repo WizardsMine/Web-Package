@@ -2,7 +2,7 @@
 
 namespace Wizard\App;
 
-class Request 
+class Request
 {
     public $route_parameters = array();
 
@@ -27,6 +27,30 @@ class Request
     public function getParam(string $value)
     {
         return $this->route_parameters[$value] ?? null;
+    }
+
+    /**
+     * @return bool
+     * Continues the request.
+     */
+    public function continue()
+    {
+        return true;
+    }
+
+    public function request(string $uri)
+    {
+        return array('type' => 'request', 'uri' => $uri);
+    }
+
+    public function page(string $page, array $params = array())
+    {
+        return array('type' => 'page', 'page' => $page, 'params' => $params);
+    }
+
+    public function text(string $text)
+    {
+        return array('type' => 'text', 'text' => $text);
     }
     
 }

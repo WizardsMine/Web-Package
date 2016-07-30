@@ -4,25 +4,14 @@ namespace Wizard\Kernel\Http\Controller;
 
 use Wizard\App\Controller;
 use Wizard\App\Request;
-use Wizard\Kernel\App;
-use Wizard\Kernel\Http\BaseFunctions;
-use Wizard\Kernel\Http\HttpKernel;
 
 class ControllerHandler
 {
-    Use BaseFunctions;
-
     /**
      * @var $controllerObject
      * Holds the class of the executed controller.
      */
     static $controllerObject;
-
-    /**
-     * @var array|mixed
-     * The route array that is generated in the Routing class.
-     */
-    private $route;
 
     /**
      * @const string
@@ -43,14 +32,10 @@ class ControllerHandler
         if (!is_array($route)) {
             throw new ControllerException('Route is not an array');
         }
-        $this->route = $route;
 
         $location = $this->getControllerLocation($route['controller']);
 
-        if (!$this->checkAndIncludeFile(App::$root, self::CONTROLLER_PATH . $location['file'])) {
-            throw new ControllerException('Controller file not found');
-        }
-        if (!$this->checkClassExist(self::CONTROLLER_PATH . $location['class'])) {
+        if (!class_exists(str_replace('/', '\\', self::CONTROLLER_PATH . $location['class']))) {
             throw new ControllerException('Controller class not found');
         }
         return $location;
@@ -58,6 +43,7 @@ class ControllerHandler
 
     /**
      * @param array $location
+     * @param Request $request
      * @return mixed
      * @throws ControllerException
      *
@@ -65,11 +51,11 @@ class ControllerHandler
      * Returning what the controller method returned and throws an error when
      * the controller method didn't return anything or null.
      */
-    public function executeController(array $location)
+    public function executeController(array $location, Request $request)
     {
         $class = str_replace('/', '\\', self::CONTROLLER_PATH.$location['class']);
 
-        $controller_object = new $class(App::$root);
+        $controller_object = new $class();
 
         if (!$controller_object instanceof Controller) {
             throw new ControllerException($location['class']. " doesn't extend the Controller class");
@@ -78,7 +64,7 @@ class ControllerHandler
             throw new ControllerException("Controller method doesn't exist");
         }
 
-        $controller = call_user_func(array($controller_object, $location['function']), $this->prepareRequest());
+        $controller = call_user_func(array($controller_object, $location['function']), $request);
 
         if ($controller === null) {
             throw new ControllerException('Controller method didnt return');
@@ -86,16 +72,6 @@ class ControllerHandler
         self::$controllerObject = $controller_object;
 
         return $controller;
-    }
-
-    private function prepareRequest()
-    {
-        $request = new Request();
-        $request->route_parameters = HttpKernel::$route['params'];
-
-        $request->models = HttpKernel::$route['models'];
-
-        return $request;
     }
 
     /**
@@ -113,15 +89,7 @@ class ControllerHandler
 
         $numbers = count($exploded);
 
-        if ($numbers > 3){
-            throw new ControllerException('Controller exist of more parts than 3');
-        } elseif ($numbers == 3) {
-            return [
-                'file' => $exploded[0],
-                'class' => $exploded[1],
-                'function' => $exploded[2]
-            ];
-        } elseif ($numbers == 2) {
+        if ($numbers == 2){
             return [
                 'file' => $exploded[0],
                 'class' => $exploded[0],
