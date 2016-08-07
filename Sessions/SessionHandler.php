@@ -161,7 +161,7 @@ class SessionHandler
                 if ($success != 1) {
                     throw new SessionException('Could not store session_id in database');
                 }
-                setcookie('PHPWIZARDSESSION', $key);
+                setcookie('PHPWIZARDSESSION', $key, 0, App::$base_uri.'/');
                 return $key;
                 break;
         }
