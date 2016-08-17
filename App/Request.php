@@ -52,5 +52,10 @@ class Request
     {
         return array('type' => 'text', 'text' => $text);
     }
+
+    public function json(array $json)
+    {
+        return array('type' => 'text', 'text' => json_encode($json));
+    }
     
 }

@@ -139,7 +139,7 @@ class AssetsManager
                         break;
                     }
                     if (!file_exists(App::$root.'/Resources/Assets/js/'.$path.'.js')) {
-                        throw new AssetException('Asset css file not found');
+                        throw new AssetException(App::$root.'/Resources/Assets/js/'.$path.'.js asset file not found');
                     }
                     $realPath = App::$base_uri.'/Resources/Assets/js/'.$path.'.js';
                     $assets['js'][] = htmlentities("<script src='$realPath'></script>");

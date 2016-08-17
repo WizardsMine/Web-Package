@@ -8,6 +8,7 @@ use Wizard\Kernel\Http\HttpKernel;
 use Wizard\Modules\Config\Config;
 use Wizard\Modules\Database\Database;
 use Wizard\Modules\Database\DatabaseException;
+use Wizard\Sessions\BaseSessionHandler;
 use Wizard\Sessions\SessionException;
 use Wizard\Sessions\SessionHandler;
 use Wizard\Templating\TemplateLoader;
@@ -52,7 +53,7 @@ class App
     static $db_connection = null;
 
     /**
-     * @var null|SessionHandler
+     * @var null|BaseSessionHandler
      * The session handler.
      */
     static $session_handler = null;
@@ -193,8 +194,7 @@ class App
     {
         try {
             $handler = new SessionHandler();
-            $handler->setup();
-            self::$session_handler = $handler;
+            self::$session_handler = $handler->setup();
         } catch (SessionException $e) {
             $e->showErrorPage();
         }

@@ -143,6 +143,9 @@ class HttpKernel
                     }
                     $path = App::$root.'/Resources/Views/'.$handler['page'].'.php';
                     App::setResponse($path, $handler['params'] ?? array());
+                    if ($type == 'controller') {
+                        return;
+                    }
                     App::send();
                     App::terminate();
                     break;

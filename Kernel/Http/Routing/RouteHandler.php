@@ -73,7 +73,7 @@ class RouteHandler
                 }
             }
         }
-        throw new RouteException("No route found error 404", "Add a page");
+        throw new RouteException("Couldn't find ". $this->uri. " route, error 404", "Add a page");
     }
 
     /**
