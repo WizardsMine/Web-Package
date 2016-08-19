@@ -31,7 +31,7 @@ abstract class BaseSessionHandler
                 $key = $this->generateId();
             } while ($this->keyExists($key));
             $this->setId($key);
-            setcookie($this->cookie, $key, 0, App::$base_uri.'/');
+            setcookie($this->cookie, $key, 0, App::$base_uri.'/', null, null, true);
         } else {
             $key = $this->getCookie();
             $this->updateTime($key);
